@@ -1,9 +1,21 @@
-// maybe some helper functions
+var convertPitch = function(strPitch) {
+	var letter = strPitch.substr(0, 1);
+	var octave = strPitch.substr(1, 1);
+	var letters = {'c':0, 'd':2, 'e':4, 'f':5, 'g':7, 'a':9, 'b':11};
+	var letterPitch = letters[letter];
+	return 12 + 12 * octave + letterPitch;
+};
 var process = function(rezult, expr, time) {
     if (expr.tag == 'note') {
-        rezult.push({tag:'note', pitch:expr.pitch, 
+        rezult.push({tag:'note', pitch:convertPitch(expr.pitch), 
                      start:time, dur: expr.dur});
         return time + expr.dur;
+    } else if (expr.tag == 'repeat') {
+    	for (var i=0;i<expr.count;i++)
+	    	time += process(rezult, expr.section, time);
+	    return time;
+    } else if (expr.tag == 'rest') {
+    	return time + expr.duration;
     } else if (expr.tag=='seq'){
         return process(rezult, expr.right, process(rezult, expr.left, time));
     }else if (expr.tag=='par'){
